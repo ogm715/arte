@@ -5,10 +5,13 @@ import { products } from '@/lib/products';
 
 type CartMap = Record<string, number>;
 const load = (): CartMap => { try { return JSON.parse(localStorage.getItem('cart')||'{}'); } catch { return {}; } };
-const save = (c: CartMap) => localStorage.setItem('cart', JSON.stringify(c));
+const save = (c: CartMap) => {
+  localStorage.setItem('cart', JSON.stringify(c));
+  window.dispatchEvent(new Event('cart:updated'));
+};
 
 export default function CartPage() {
-  const [, setTick] = useState(0);
+  const [tick, setTick] = useState(0);
   const force = () => setTick(t => t + 1);
   useEffect(() => { force(); }, []);
 
@@ -20,7 +23,7 @@ export default function CartPage() {
       const qty = c[id] || 0;
       return { p, qty, lineTotal: p.price * qty };
     }).filter(Boolean) as { p: typeof products[number]; qty: number; lineTotal: number }[];
-  }, [setTick]);
+  }, [tick]);
 
   const total = entries.reduce((s, e) => s + e.lineTotal, 0);
 
